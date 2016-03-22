@@ -33,7 +33,7 @@ using Dapplo.PowerShell.Jira.Support;
 namespace Dapplo.PowerShell.Jira
 {
 	[Cmdlet(VerbsCommon.Get, "JiraIssue")]
-	[OutputType(typeof (Issue))]
+	[OutputType(typeof (Fields))]
 	public class GetJiraIssue : AsyncCmdlet
 	{
 		private JiraApi _jiraApi;
@@ -50,9 +50,9 @@ namespace Dapplo.PowerShell.Jira
 		[Parameter(Position = 3, ValueFromPipelineByPropertyName = true)]
 		public string Username { get; set; }
 
-		protected override async Task BeginProcessingAsync()
+		protected override void BeginProcessing()
 		{
-			_jiraApi = await JiraApi.CreateAndInitializeAsync(JiraUri);
+			_jiraApi = new JiraApi(JiraUri);
 			if (Username != null)
 			{
 				_jiraApi.SetBasicAuthentication(Username, Password);
@@ -61,9 +61,8 @@ namespace Dapplo.PowerShell.Jira
 
 		protected override async Task ProcessRecordAsync()
 		{
-			var issue = await _jiraApi.IssueAsync(IssueKey);
-			WriteDebug(issue.Fields.Summary);
-			WriteObject(issue);
+			var issue = await _jiraApi.GetIssueAsync(IssueKey);
+			WriteObject(issue.Fields);
 		}
 	}
 }
