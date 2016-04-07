@@ -25,22 +25,48 @@ using System.Management.Automation;
 using System.Threading.Tasks;
 using Dapplo.Jira.Entities;
 using Dapplo.PowerShell.Jira.Support;
+using System.IO;
 
 #endregion
 
 namespace Dapplo.PowerShell.Jira
 {
-	[Cmdlet(VerbsCommon.Get, "JiraIssue")]
-	[OutputType(typeof (Fields))]
-	public class GetJiraIssue : JiraAsyncCmdlet
+	[Cmdlet(VerbsCommon.Add, "JiraAttachment")]
+	[OutputType(typeof (Attachment))]
+	public class AddJiraAttachment : JiraAsyncCmdlet
 	{
 		[Parameter(ValueFromPipeline = true, Mandatory = true, Position = 1, ValueFromPipelineByPropertyName = true)]
 		public string IssueKey { get; set; }
 
+		[Parameter(ValueFromPipeline = true, Mandatory = true, Position = 2, ValueFromPipelineByPropertyName = true)]
+		public string Filename { get; set; }
+
+		[Parameter(ValueFromPipeline = true, Mandatory = true, Position = 3, ValueFromPipelineByPropertyName = true)]
+		public string Filepath { get; set; }
+
+		[Parameter(ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
+		public string ContentType { get; set; }
+
 		protected override async Task ProcessRecordAsync()
 		{
-			var issue = await JiraApi.GetIssueAsync(IssueKey);
-			WriteObject(issue.Fields);
+			if (!Path.IsPathRooted(Filepath))
+			{
+				var currentDirectory = CurrentProviderLocation("FileSystem").ProviderPath;
+				Filepath = Path.Combine(currentDirectory, Filepath);
+			}
+
+			if (!File.Exists(Filepath))
+			{
+				throw new FileNotFoundException($"Couldn't find file {Filepath}");
+			}
+			using (var stream = File.OpenRead(Filepath))
+			{
+				var attachments = await JiraApi.AttachAsync(IssueKey, stream, Filename, ContentType);
+				foreach (var attachment in attachments)
+				{
+					WriteObject(attachment);
+				}
+			}
 		}
 	}
 }

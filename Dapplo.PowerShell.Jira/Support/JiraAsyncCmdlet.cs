@@ -21,26 +21,34 @@
 
 #region using
 
+using System;
 using System.Management.Automation;
-using System.Threading.Tasks;
-using Dapplo.Jira.Entities;
-using Dapplo.PowerShell.Jira.Support;
+using Dapplo.Jira;
 
 #endregion
 
-namespace Dapplo.PowerShell.Jira
+namespace Dapplo.PowerShell.Jira.Support
 {
-	[Cmdlet(VerbsCommon.Get, "JiraIssue")]
-	[OutputType(typeof (Fields))]
-	public class GetJiraIssue : JiraAsyncCmdlet
+	public class JiraAsyncCmdlet : AsyncCmdlet
 	{
-		[Parameter(ValueFromPipeline = true, Mandatory = true, Position = 1, ValueFromPipelineByPropertyName = true)]
-		public string IssueKey { get; set; }
+		protected JiraApi JiraApi;
 
-		protected override async Task ProcessRecordAsync()
+		[Parameter(Mandatory = true, Position = 0, ValueFromPipelineByPropertyName = true)]
+		public Uri JiraUri { get; set; }
+
+		[Parameter(ValueFromPipelineByPropertyName = true)]
+		public string Password { get; set; }
+
+		[Parameter(ValueFromPipelineByPropertyName = true)]
+		public string Username { get; set; }
+
+		protected override void BeginProcessing()
 		{
-			var issue = await JiraApi.GetIssueAsync(IssueKey);
-			WriteObject(issue.Fields);
+			JiraApi = new JiraApi(JiraUri);
+			if (Username != null)
+			{
+				JiraApi.SetBasicAuthentication(Username, Password);
+			}
 		}
 	}
 }

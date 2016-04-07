@@ -16,7 +16,7 @@
 //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //  GNU Lesser General Public License for more details.
 // 
-//  You should have Config a copy of the GNU Lesser General Public License
+//  You should have a copy of the GNU Lesser General Public License
 //  along with Dapplo.PowerShell.Jira. If not, see <http://www.gnu.org/licenses/lgpl.txt>.
 
 #region using
@@ -28,7 +28,7 @@ using System.Threading.Tasks;
 
 namespace Dapplo.PowerShell.Jira.Support
 {
-	public abstract class AsyncCmdlet : Cmdlet
+	public abstract class AsyncCmdlet : PSCmdlet
 	{
 		protected override void BeginProcessing()
 		{
@@ -37,22 +37,9 @@ namespace Dapplo.PowerShell.Jira.Support
 		}
 
 		/// <summary>
-		/// Override this to implement the BeginProcessing with Async code
+		///     Override this to implement the BeginProcessing with Async code
 		/// </summary>
 		protected virtual Task BeginProcessingAsync()
-		{
-			return Task.FromResult(0);
-		}
-
-		protected override void ProcessRecord()
-		{
-			AsyncPump.Run(async () => await ProcessRecordAsync());
-		}
-
-		/// <summary>
-		/// Override this to implement the ProcessRecord with Async code
-		/// </summary>
-		protected virtual Task ProcessRecordAsync()
 		{
 			return Task.FromResult(0);
 		}
@@ -63,9 +50,22 @@ namespace Dapplo.PowerShell.Jira.Support
 		}
 
 		/// <summary>
-		/// Override this to implement the EndProcessing with Async code
+		///     Override this to implement the EndProcessing with Async code
 		/// </summary>
 		protected virtual Task EndProcessingAsync()
+		{
+			return Task.FromResult(0);
+		}
+
+		protected override void ProcessRecord()
+		{
+			AsyncPump.Run(async () => await ProcessRecordAsync());
+		}
+
+		/// <summary>
+		///     Override this to implement the ProcessRecord with Async code
+		/// </summary>
+		protected virtual Task ProcessRecordAsync()
 		{
 			return Task.FromResult(0);
 		}

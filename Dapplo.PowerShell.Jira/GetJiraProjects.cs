@@ -30,17 +30,17 @@ using Dapplo.PowerShell.Jira.Support;
 
 namespace Dapplo.PowerShell.Jira
 {
-	[Cmdlet(VerbsCommon.Get, "JiraIssue")]
-	[OutputType(typeof (Fields))]
-	public class GetJiraIssue : JiraAsyncCmdlet
+	[Cmdlet(VerbsCommon.Get, "JiraProjects")]
+	[OutputType(typeof (ProjectDigest))]
+	public class GetJiraProjects : JiraAsyncCmdlet
 	{
-		[Parameter(ValueFromPipeline = true, Mandatory = true, Position = 1, ValueFromPipelineByPropertyName = true)]
-		public string IssueKey { get; set; }
-
 		protected override async Task ProcessRecordAsync()
 		{
-			var issue = await JiraApi.GetIssueAsync(IssueKey);
-			WriteObject(issue.Fields);
+			var projects = await JiraApi.GetProjectsAsync();
+			foreach (var projectDigest in projects)
+			{
+				WriteObject(projectDigest);
+			}
 		}
 	}
 }
